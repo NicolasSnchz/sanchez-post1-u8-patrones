@@ -7,9 +7,13 @@ import com.example.auditoria.adapter.in.web.dto.RegistrarHallazgoRequest;
 import com.example.auditoria.domain.valueobject.HallazgoId;
 import com.example.auditoria.usecase.CerrarHallazgoUseCase;
 import com.example.auditoria.usecase.ConsultarHallazgoUseCase;
+import com.example.auditoria.usecase.ConsultarHistorialUseCase;
 import com.example.auditoria.usecase.IniciarRemediacionUseCase;
+import com.example.auditoria.usecase.ObtenerDashboardAuditoriaUseCase;
 import com.example.auditoria.usecase.ReabrirHallazgoUseCase;
 import com.example.auditoria.usecase.RegistrarHallazgoUseCase;
+import com.example.auditoria.usecase.port.CambioEstadoView;
+import com.example.auditoria.usecase.port.DashboardAuditoriaView;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,17 +42,23 @@ public class HallazgoController {
     private final CerrarHallazgoUseCase cerrarUseCase;
     private final ReabrirHallazgoUseCase reabrirUseCase;
     private final ConsultarHallazgoUseCase consultarUseCase;
+    private final ObtenerDashboardAuditoriaUseCase dashboardUseCase;
+    private final ConsultarHistorialUseCase consultarHistorialUseCase;
 
     public HallazgoController(RegistrarHallazgoUseCase registrarUseCase,
                               IniciarRemediacionUseCase iniciarRemediacionUseCase,
                               CerrarHallazgoUseCase cerrarUseCase,
                               ReabrirHallazgoUseCase reabrirUseCase,
-                              ConsultarHallazgoUseCase consultarUseCase) {
+                              ConsultarHallazgoUseCase consultarUseCase,
+                              ObtenerDashboardAuditoriaUseCase dashboardUseCase,
+                              ConsultarHistorialUseCase consultarHistorialUseCase) {
         this.registrarUseCase = registrarUseCase;
         this.iniciarRemediacionUseCase = iniciarRemediacionUseCase;
         this.cerrarUseCase = cerrarUseCase;
         this.reabrirUseCase = reabrirUseCase;
         this.consultarUseCase = consultarUseCase;
+        this.dashboardUseCase = dashboardUseCase;
+        this.consultarHistorialUseCase = consultarHistorialUseCase;
     }
 
     @PostMapping
@@ -82,6 +92,16 @@ public class HallazgoController {
                                                defaultValue = USUARIO_POR_DEFECTO) String usuario) {
         reabrirUseCase.ejecutar(aId(id), req.motivo(), usuario);
         return Map.of("estado", "REABIERTO");
+    }
+
+    @GetMapping("/dashboard")
+    public DashboardAuditoriaView dashboard() {
+        return dashboardUseCase.ejecutar();
+    }
+
+    @GetMapping("/{id}/historial")
+    public List<CambioEstadoView> historial(@PathVariable("id") String id) {
+        return consultarHistorialUseCase.ejecutar(aId(id));
     }
 
     @GetMapping("/{id}")
