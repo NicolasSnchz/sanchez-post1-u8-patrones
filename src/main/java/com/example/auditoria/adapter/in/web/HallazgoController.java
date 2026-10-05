@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/hallazgos")
 public class HallazgoController {
+
+    static final String USUARIO_HEADER = "X-Usuario";
+    static final String USUARIO_POR_DEFECTO = "anonimo";
 
     private final RegistrarHallazgoUseCase registrarUseCase;
     private final IniciarRemediacionUseCase iniciarRemediacionUseCase;
@@ -57,20 +61,26 @@ public class HallazgoController {
 
     @PatchMapping("/{id}/iniciar-remediacion")
     public Map<String, String> iniciarRemediacion(@PathVariable("id") String id,
-                                                  @Valid @RequestBody IniciarRemediacionRequest req) {
-        iniciarRemediacionUseCase.ejecutar(aId(id), req.responsable(), req.fechaLimite(), req.notas());
+                                                  @Valid @RequestBody IniciarRemediacionRequest req,
+                                                  @RequestHeader(value = USUARIO_HEADER,
+                                                          defaultValue = USUARIO_POR_DEFECTO) String usuario) {
+        iniciarRemediacionUseCase.ejecutar(aId(id), req.responsable(), req.fechaLimite(), req.notas(), usuario);
         return Map.of("estado", "EN_REMEDIACION");
     }
 
     @PatchMapping("/{id}/cerrar")
-    public Map<String, String> cerrar(@PathVariable("id") String id) {
-        cerrarUseCase.ejecutar(aId(id));
+    public Map<String, String> cerrar(@PathVariable("id") String id,
+                                      @RequestHeader(value = USUARIO_HEADER,
+                                              defaultValue = USUARIO_POR_DEFECTO) String usuario) {
+        cerrarUseCase.ejecutar(aId(id), usuario);
         return Map.of("estado", "CERRADO");
     }
 
     @PatchMapping("/{id}/reabrir")
-    public Map<String, String> reabrir(@PathVariable("id") String id, @Valid @RequestBody ReabrirRequest req) {
-        reabrirUseCase.ejecutar(aId(id), req.motivo());
+    public Map<String, String> reabrir(@PathVariable("id") String id, @Valid @RequestBody ReabrirRequest req,
+                                       @RequestHeader(value = USUARIO_HEADER,
+                                               defaultValue = USUARIO_POR_DEFECTO) String usuario) {
+        reabrirUseCase.ejecutar(aId(id), req.motivo(), usuario);
         return Map.of("estado", "REABIERTO");
     }
 

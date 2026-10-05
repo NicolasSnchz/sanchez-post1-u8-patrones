@@ -4,5 +4,5 @@ import com.example.auditoria.domain.valueobject.HallazgoId;
 
 public interface CerrarHallazgoUseCase {
 
-    void ejecutar(HallazgoId id);
+    void ejecutar(HallazgoId id, String usuario);
 }
